@@ -35,8 +35,6 @@ export class AuthService {
     });
 
     session.userId = createdUser.id;
-    // TODO Connect with session ?
-
     // TODO Add confirmation in this mail
     this.mailerService.sendEmail(createdUser.email, 'Welcome to Nexus');
 

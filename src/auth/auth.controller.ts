@@ -24,8 +24,7 @@ export class AuthController {
   @UseGuards(AuthGuard('local'))
   @Post('signin')
   signin(@Request() req, @Session() session: Record<string, any>) {
-    session.userId = req.user.id;
-
+    req.session.userId = req.user.id;
     return req.user;
   }
 

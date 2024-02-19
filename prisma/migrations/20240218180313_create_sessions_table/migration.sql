@@ -4,7 +4,6 @@ CREATE TABLE "sessions" (
     "sid" TEXT NOT NULL,
     "userId" INTEGER NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
-    "data" TEXT,
 
     CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
 );

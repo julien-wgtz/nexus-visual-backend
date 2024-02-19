@@ -24,9 +24,9 @@ model User {
 model Session {
   id        Int   @id @default(autoincrement())
   sid       String   @unique
-  userId    Int?
   expire   DateTime
   sess   Json
+  
   @@map("sessions")
 }
 

@@ -50,12 +50,12 @@ export class AuthController {
   }
 
   @Get('confirm')
-  async confirm(@Query('token') token: string) {
+  async confirm(@Query('token') token: string, @Response() res) {
     const confirmation = await this.usersService.confirmUser(token);
     if (confirmation) {
-      return 'Compte confirmé avec succès.';
+      return res.status(200).send({ message: 'Compte confirmé' });
     } else {
-      return 'Token invalide ou expiré.';
+      return res.status(400).send({ message: 'Token introuvable ou expiré' });
     }
   }
 }

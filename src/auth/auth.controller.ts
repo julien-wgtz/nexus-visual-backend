@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
+  Query,
   Request,
   Response,
   Session,
@@ -10,10 +12,14 @@ import {
 import { SignupDto } from './dto/signupDto';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
+import { UsersService } from 'src/users/users.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
   @Post('signup')
   signup(
     @Body() signupDto: SignupDto,
@@ -41,5 +47,15 @@ export class AuthController {
       }
       res.status(200).send({ message: 'Déconnexion réussie' });
     });
+  }
+
+  @Get('confirm')
+  async confirm(@Query('token') token: string) {
+    const confirmation = await this.usersService.confirmUser(token);
+    if (confirmation) {
+      return 'Compte confirmé avec succès.';
+    } else {
+      return 'Token invalide ou expiré.';
+    }
   }
 }

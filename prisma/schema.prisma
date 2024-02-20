@@ -17,7 +17,8 @@ model User {
   role ROLE @default(USER)
   createdAt DateTime @default(now()) @map("created_at")
   updateAt DateTime @updatedAt @map("upadte_at")
-
+  confirmed Boolean @default(false)
+  confirmationToken confirmationToken[]
   @@map("users")
 }
 
@@ -28,6 +29,15 @@ model Session {
   sess   Json
   
   @@map("sessions")
+}
+
+model confirmationToken {
+  id        Int @id @default(autoincrement())
+  token     String @unique
+  user      User @relation(fields: [userId], references: [id])
+  userId    Int 
+  expiresAt DateTime
+  @@map("confirmation_tokens")
 }
 
 enum ROLE {

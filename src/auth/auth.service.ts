@@ -8,6 +8,7 @@ import { SignupDto } from './dto/signupDto';
 import { SigninDto } from './dto/sugninDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -35,8 +36,22 @@ export class AuthService {
     });
 
     session.userId = createdUser.id;
-    // TODO Add confirmation in this mail
-    this.mailerService.sendEmail(createdUser.email, 'Welcome to Nexus');
+
+    const confirmationToken = randomBytes(32).toString('hex');
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + 1); // Le token expire dans 1 jour
+
+    await this.prismaService.confirmationToken.create({
+      data: {
+        userId: createdUser.id,
+        token: confirmationToken,
+        expiresAt: expirationDate,
+      },
+    });
+
+    this.mailerService.sendEmail(createdUser.email, 'Welcome to Nexus', null, {
+      confirmationToken,
+    });
 
     return { data: 'User is successfully create' };
   }

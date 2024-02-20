@@ -10,13 +10,15 @@ export class MailerService {
     this.mailer = new Resend(configService.get('MAILER_API_KEY'));
   }
 
-  sendEmail(to: string, subject: string) {
+  sendEmail(to: string, subject: string, template?: any, data?: any) {
     // TODO Install react mailer To select template
+    const confirmationUrl = `${this.configService.get('ROOT_URL')}/auth/confirm?token=${data.confirmationToken}`;
+
     this.mailer.emails.send({
       from: this.configService.get('MAILER_MAIL_ADDRESS'),
       to,
       subject,
-      html: '<p>HOPP on sending your <strong>first email</strong>!</p>',
+      html: `Veuillez cliquer sur ce lien pour confirmer votre compte: <a href="${confirmationUrl}">Confirmer</a>`,
     });
   }
 }

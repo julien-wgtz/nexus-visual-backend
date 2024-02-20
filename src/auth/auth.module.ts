@@ -5,9 +5,10 @@ import { MailerService } from 'src/mailer/mailer.service';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
 import { SessionSerializer } from './sessionSerializer';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [PassportModule.register({ session: true })],
+  imports: [PassportModule.register({ session: true }), UsersModule],
   controllers: [AuthController],
   providers: [AuthService, MailerService, LocalStrategy, SessionSerializer],
 })

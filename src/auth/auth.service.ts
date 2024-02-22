@@ -49,9 +49,14 @@ export class AuthService {
       },
     });
 
-    this.mailerService.sendEmail(createdUser.email, 'Welcome to Nexus', null, {
-      confirmationToken,
-    });
+    this.mailerService.sendEmail(
+      createdUser.email,
+      'Welcome to Nexus',
+      'ConfirmationSignin',
+      {
+        confirmationToken,
+      },
+    );
 
     return { data: 'User is successfully create' };
   }

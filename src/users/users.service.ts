@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -21,5 +22,16 @@ export class UsersService {
     await this.prismaService.confirmationToken.delete({ where: { token } });
 
     return true;
+  }
+
+  async addNotionMainPageToUser(
+    userId: number,
+    notionPageId: string,
+  ): Promise<User> {
+    const user = await this.prismaService.user.update({
+      where: { id: userId },
+      data: { notionMainPageId: notionPageId },
+    });
+    return user;
   }
 }

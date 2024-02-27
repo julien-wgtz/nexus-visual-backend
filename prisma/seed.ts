@@ -10,6 +10,7 @@ async function main() {
       confirmed: true,
       role: 'ADMIN',
       notionToken: 'secret_3fhv1cScjcPwOquKJsCPpQHMOzLKJZVcD4pqVyI2tNP',
+      notionMainPageId: 'f6454832899b494c8e6de7e2fa63a845',
     },
   });
 }

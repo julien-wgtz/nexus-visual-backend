@@ -10,6 +10,6 @@ function exclude<User, Key extends keyof User>(
 }
 
 export function filterUserClean(user: User) {
-  const userClean = exclude(user, ['password', 'notionToken', 'confirmed']);
+  const userClean = exclude(user, ['password', 'confirmed']);
   return userClean;
 }

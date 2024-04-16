@@ -10,17 +10,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+model Account {
+  id Int @id @default(autoincrement())
+  name String?
+  notionToken String?
+  notionPageId String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updateAt DateTime @updatedAt @map("update_at")
+  status STATUS_ACCOUNT @default(FREE)
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId Int @unique
+  users AccountUser[]
+  @@map("accounts")
+}
+
+model AccountUser {
+  id Int @id @default(autoincrement())
+  account Account @relation(fields: [accountId], references: [id])
+  accountId Int
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+  role ROLE_ACCOUNT @default(VIEWER)
+  @@map("account_users")
+}
+
 model User {
   id Int @id @default(autoincrement())
-  password String 
+  password String
   email String @unique @db.VarChar(255)
-  notionToken String?
-  notionMainPageId String?
-  role ROLE @default(USER)
+  role ROLE_USER @default(USER)
   createdAt DateTime @default(now()) @map("created_at")
-  updateAt DateTime @updatedAt @map("upadte_at")
+  updateAt DateTime @updatedAt @map("update_at")
   confirmed Boolean @default(false)
   confirmationToken confirmationToken[]
+  account Account?
+  accountUser AccountUser[]
   @@map("users")
 }
 
@@ -42,7 +67,20 @@ model confirmationToken {
   @@map("confirmation_tokens")
 }
 
-enum ROLE {
+enum ROLE_USER {
   USER
   ADMIN
+}
+
+enum ROLE_ACCOUNT {
+  ADMIN
+  VIEWER
+}
+
+enum STATUS_ACCOUNT {
+  GOD
+  TESTEUR
+  BASIC
+  PRENIUM
+  FREE
 }

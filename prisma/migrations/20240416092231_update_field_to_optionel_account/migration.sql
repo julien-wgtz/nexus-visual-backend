@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "accounts" ALTER COLUMN "name" DROP NOT NULL,
+ALTER COLUMN "notionToken" DROP NOT NULL,
+ALTER COLUMN "notionPageId" DROP NOT NULL;

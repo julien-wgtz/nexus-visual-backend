@@ -11,21 +11,21 @@ export class MailerService {
     this.mailer = new Resend(configService.get('MAILER_API_KEY'));
   }
 
-  sendEmail(to: string, subject: string, template?: any, data?: any) {
+  async sendEmail(to: string, subject: string, template?: any, data?: any) {
     // TODO Install react mailer To select template
-
     // Validate template argument
     if (!EmailTemplates[template]) {
       throw new Error('Invalid email template specified');
     }
 
     const templateFunction = EmailTemplates[template];
-
-    this.mailer.emails.send({
-      from: this.configService.get('MAILER_MAIL_ADDRESS'),
+    const mail = await this.mailer.emails.send({
+      from: `Nexus <${this.configService.get('MAILER_MAIL_ADDRESS')}>`,
       to,
       subject,
       react: templateFunction(data),
     });
+
+    console.log(mail);
   }
 }

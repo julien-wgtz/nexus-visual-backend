@@ -10,8 +10,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const pgSession = connectPgSimple(session);
   const configService = app.get<ConfigService>(ConfigService);
-
   app.useGlobalPipes(new ValidationPipe());
+  app.enableCors({
+    origin: [configService.get('FRONT_URL')],
+    credentials: true,
+  });
   app.use(
     session({
       store: new pgSession({
@@ -30,6 +33,6 @@ async function bootstrap() {
   );
   app.use(passport.initialize());
   app.use(passport.session());
-  await app.listen(3000);
+  await app.listen(configService.get('PORT'));
 }
 bootstrap();

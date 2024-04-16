@@ -24,14 +24,25 @@ export class UsersService {
     return true;
   }
 
-  async addNotionMainPageToUser(
-    userId: number,
-    notionPageId: string,
-  ): Promise<User> {
-    const user = await this.prismaService.user.update({
-      where: { id: userId },
-      data: { notionMainPageId: notionPageId },
+  async list() {
+    return await this.prismaService.user.findMany({ select: { email: true } });
+  }
+
+  // async addNotionMainPageToUser(
+  //   userId: number,
+  //   notionPageId: string,
+  // ): Promise<User> {
+  //   const user = await this.prismaService.user.update({
+  //     where: { id: userId },
+  //     data: { notionMainPageId: notionPageId },
+  //   });
+  //   return user;
+  // }
+
+  // Récupérez l'utilisateur à partir de la base de données
+  async findOne(id: number): Promise<User | null> {
+    return this.prismaService.user.findUnique({
+      where: { id },
     });
-    return user;
   }
 }

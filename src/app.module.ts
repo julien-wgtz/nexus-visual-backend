@@ -7,6 +7,9 @@ import { UsersModule } from './users/users.module';
 import { AccountsService } from './accounts/accounts.service';
 import { AccountsController } from './accounts/accounts.controller';
 import { AccountsModule } from './accounts/accounts.module';
+import { ChartsController } from './charts/charts.controller';
+import { ChartsService } from './charts/charts.service';
+import { ChartsModule } from './charts/charts.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -18,8 +21,9 @@ import { AccountsModule } from './accounts/accounts.module';
     MailerModule,
     UsersModule,
     AccountsModule,
+    ChartsModule,
   ],
-  providers: [AccountsService],
-  controllers: [AccountsController],
+  providers: [AccountsService, ChartsService],
+  controllers: [AccountsController, ChartsController],
 })
 export class AppModule {}

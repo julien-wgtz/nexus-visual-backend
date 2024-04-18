@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { MailerService } from 'src/mailer/mailer.service';
 import { SignupDto } from './dto/signupDto';
-import { SigninDto } from './dto/sugninDto';
+import { SigninDto } from './dto/signinDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';

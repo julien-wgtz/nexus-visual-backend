@@ -39,7 +39,6 @@ model User {
   id Int @id @default(autoincrement())
   password String
   email String @unique @db.VarChar(255)
-  role ROLE_USER @default(USER)
   createdAt DateTime @default(now()) @map("created_at")
   updateAt DateTime @updatedAt @map("update_at")
   confirmed Boolean @default(false)
@@ -67,11 +66,6 @@ model confirmationToken {
   @@map("confirmation_tokens")
 }
 
-enum ROLE_USER {
-  USER
-  ADMIN
-}
-
 enum ROLE_ACCOUNT {
   ADMIN
   VIEWER
@@ -79,8 +73,7 @@ enum ROLE_ACCOUNT {
 
 enum STATUS_ACCOUNT {
   GOD
-  TESTEUR
-  BASIC
-  PRENIUM
+  TESTER
+  PRO
   FREE
 }

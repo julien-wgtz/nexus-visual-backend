@@ -75,6 +75,7 @@ model Folder {
   account Account @relation(fields: [accountId], references: [id])
   accountId Int
   charts Chart[]
+  order Int
   @@map("folders")
 }
 
@@ -86,6 +87,7 @@ model Chart {
   updateAt DateTime @updatedAt @map("update_at")
   folder Folder @relation(fields: [folderId], references: [id])
   folderId Int 
+  order Int
   chartData ChartData[]
   @@map("charts")
 }

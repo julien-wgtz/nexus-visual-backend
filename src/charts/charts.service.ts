@@ -75,30 +75,60 @@ export class ChartsService {
   }
 
   async updateOrder(indexOrigine: number, indexDestination: number, folderOrigineId: number, folderDestinationId: number) {
+
     const folderOrgine = await this.prisma.folder.findUnique({
       where: { id: folderOrigineId },
       include: {
-				charts: {
-					orderBy: {
-						order: 'asc'
-					}
-				}
-			}
-    });
-
-    const folderDestination = await this.prisma.folder.findUnique({
-      where: { id: folderDestinationId },
-      include: {
-				charts: {
-					orderBy: {
-						order: 'asc'
-					}
-				}
-			}
+        charts: {
+          orderBy: {
+            order: 'asc'
+          }
+        }
+      }
     });
 
     const chartToMove = folderOrgine.charts[indexOrigine];
+
+if(folderOrigineId != folderDestinationId) {
+    const folderDestination = await this.prisma.folder.findUnique({
+      where: { id: folderDestinationId },
+      include: {
+        charts: {
+          orderBy: {
+            order: 'asc'
+          }
+        }
+      }
+    });
+
+    
     folderOrgine.charts.splice(indexOrigine, 1);
+    folderDestination.charts.splice(indexDestination, 0, chartToMove);
+    
+      await this.prisma.chart.update({
+        where: { id: chartToMove.id },
+        data: {
+          order: indexDestination,
+          folderId: folderDestinationId,
+        },
+      });
+
+
+      for(let i = 0; i < folderDestination.charts.length; i++) {
+        folderDestination.charts[i].order = i;
+        if(folderDestination.charts[i].id !== chartToMove.id || folderOrigineId !== folderDestinationId) {
+          await this.prisma.chart.update({
+            where: { id: folderDestination.charts[i].id },
+            data: {
+              order: i,
+            },
+          });
+        }
+      }
+    } else {
+      folderOrgine.charts.splice(indexOrigine, 1);
+      folderOrgine.charts.splice(indexDestination > indexOrigine ? indexDestination - 1 : indexDestination, 0, chartToMove);
+    }
 
     for(let i = 0; i < folderOrgine.charts.length; i++) {
       folderOrgine.charts[i].order = i;
@@ -110,40 +140,20 @@ export class ChartsService {
       });
     }
 
-    await this.prisma.chart.update({
-      where: { id: chartToMove.id },
-      data: {
-        order: indexDestination,
-        folderId: folderDestinationId,
-      },
-    });
-
-    folderDestination.charts.splice(indexDestination, 0, chartToMove);
-
-      for(let i = 0; i < folderDestination.charts.length; i++) {
-        folderDestination.charts[i].order = i;
-        if(folderDestination.charts[i].id !== chartToMove.id) {
-          await this.prisma.chart.update({
-            where: { id: folderDestination.charts[i].id },
-            data: {
-              order: i,
-            },
-          });
-        }
-      }
 
     const folders = await this.prisma.folder.findMany({
       orderBy: {
-				order: 'asc'
-			},
-			include: {
-				charts: {
-					orderBy: {
-						order: 'asc'
-					}
-				}
-			}
+        order: 'asc'
+      },
+      include: {
+        charts: {
+          orderBy: {
+            order: 'asc'
+          }
+        }
+      }
     });
-    return folders;
+   return folders;
   }
+
 }

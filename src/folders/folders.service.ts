@@ -55,6 +55,13 @@ export class FoldersService {
 				data: {
 					name: folderDto.name,
 					order: folderDto.order
+				},
+				include: {
+					charts: {
+						orderBy: {
+							order: 'asc'
+						}
+					}
 				}
 			});
 			return response.status(HttpStatus.OK).json(folder);

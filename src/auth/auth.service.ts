@@ -22,7 +22,7 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly accountService: AccountsService,
   ) {}
-  async signup(signupDto: SignupDto, session: Record<string, any>) {
+  async signup(signupDto: SignupDto, session: Record<string, any>,@Request() req) {
     const { email, password } = signupDto;
     const userExist = await this.prismaService.user.findUnique({
       where: {
@@ -50,8 +50,29 @@ export class AuthService {
       },
     });
 
-    session.userId = user.id;
+    const shadowFolder = await this.prismaService.folder.create({
+      data: {
+        isShadow: true,
+        order: 10000,
+        account: {
+          connect: {
+            id: account.id,
+          },
+        },
+      },
+    });
 
+    req.user = user;
+    req.session.save();
+    await new Promise<void>((resolve, reject) => {
+      req.login(req.user, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
     const confirmationToken = randomBytes(32).toString('hex');
     const expirationDate = new Date();
     expirationDate.setDate(expirationDate.getDate() + 1); // Le token expire dans 1 jour

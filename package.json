@@ -29,6 +29,7 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
+    "@notionhq/client": "^2.2.15",
     "@prisma/client": "^5.9.1",
     "@react-email/components": "0.0.14",
     "@types/bcrypt": "^5.0.2",

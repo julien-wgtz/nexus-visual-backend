@@ -10,6 +10,11 @@ import { AccountsModule } from './accounts/accounts.module';
 import { ChartsController } from './charts/charts.controller';
 import { ChartsService } from './charts/charts.service';
 import { ChartsModule } from './charts/charts.module';
+import { NotionController } from './notion/notion.controller';
+import { NotionService } from './notion/notion.service';
+import { ModuleService } from './module/module.service';
+import { FoldersService } from './folders/folders.service';
+import { FoldersModule } from './folders/folders.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,8 +27,9 @@ import { ChartsModule } from './charts/charts.module';
     UsersModule,
     AccountsModule,
     ChartsModule,
+    FoldersModule,
   ],
-  providers: [AccountsService, ChartsService],
-  controllers: [AccountsController, ChartsController],
+  providers: [AccountsService, ChartsService, NotionService, ModuleService, FoldersService],
+  controllers: [AccountsController, ChartsController, NotionController],
 })
 export class AppModule {}

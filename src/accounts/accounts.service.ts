@@ -12,4 +12,15 @@ export class AccountsService {
       },
     });
   }
+
+  async getNotionToken(accountId: number) {
+    return this.prismaService.account.findUnique({
+      where: {
+        ownerId: accountId,
+      },
+      select: {
+        notionToken: true,
+      },
+    });
+  }
 }

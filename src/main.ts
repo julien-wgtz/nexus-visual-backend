@@ -28,6 +28,7 @@ async function bootstrap() {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         secure: false,
         httpOnly: true,
+        sameSite: 'lax',
       },
     }),
   );

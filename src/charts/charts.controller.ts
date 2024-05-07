@@ -1,44 +1,43 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ChartsService } from './charts.service';
-import { FolderDto } from './dto/folderDto';
-
+import { FolderDto } from '../folders/dto/folderDto';
+import { ChartDto } from './dto/chartDto';
+import { AuthGuard } from 'src/auth/auth.guard';
+@UseGuards(AuthGuard)
 @Controller('charts')
 export class ChartsController {
   constructor(private chartsService: ChartsService) {}
 
-  // Route pour récupérer tous les folder d'un account id
-  @Post('get-folders')
-  async getFolders(@Body() folderDto: FolderDto) {
-    return this.chartsService.getFolders(folderDto.accountId);
+  @Post('create')
+  async createChart(@Body() chart: ChartDto) {
+    return this.chartsService.createChart(chart);
   }
 
-  // create a route to create a folder
-  @Post('create-folder')
-  async createFolder(@Body() folderDto: FolderDto) {
-    return this.chartsService.createFolder(folderDto);
+  @Post('delete')
+  async deleteChart(@Body() chart: ChartDto) {
+    return this.chartsService.deleteChart(chart);
   }
 
-  // route to update the folder name
-  @Post('update-folder')
-  async updateFolder(@Body() folderDto: FolderDto) {
-    return this.chartsService.updateFolder(folderDto.id, folderDto);
+  @Post('update')
+  async updateChart(@Body() chart: ChartDto) {
+    return this.chartsService.updateChart(chart);
   }
 
-  // route to delete a folder
-  @Post('delete-folder')
-  async deleteFolder(@Body() folderDto: FolderDto) {
-    return this.chartsService.deleteFolder(folderDto.id);
+  @Post('update-order')
+  async updateOrder(
+    @Body() {
+      indexOrigine,
+      indexDestination,
+      folderOrigineId,
+      folderDestinationId
+    } : {
+      indexOrigine: number,
+      indexDestination: number,
+      folderOrigineId: number,
+      folderDestinationId: number
+    }) {
+
+    return this.chartsService.updateOrder(indexOrigine, indexDestination, folderOrigineId, folderDestinationId);
   }
 
-  //route to rename a folder
-  @Post('rename-folder')
-  async renameFolder(@Body() folderDto: FolderDto) {
-    return this.chartsService.renameFolder(folderDto.id, folderDto);
-  }
-
-  // route to update order of one folder
-  @Post('change-order')
-  async changeOrder(@Body() folderDto: FolderDto) {
-    return this.chartsService.changeOrder(folderDto.id, folderDto.order);
-  }
 }

@@ -69,19 +69,21 @@ model confirmationToken {
 
 model Folder {
   id Int @id @default(autoincrement())
-  name String
+  name String?
   createdAt DateTime @default(now()) @map("created_at")
   updateAt DateTime @updatedAt @map("update_at")
   account Account @relation(fields: [accountId], references: [id])
   accountId Int
   charts Chart[]
   order Int
+  isShadow Boolean @default(false)
   @@map("folders")
 }
 
 model Chart {
   id Int @id @default(autoincrement())
   title String
+  databaseId String
   currentChartType CHART_TYPE @default(LINE)
   createdAt DateTime @default(now()) @map("created_at")
   updateAt DateTime @updatedAt @map("update_at")

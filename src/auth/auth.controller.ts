@@ -17,8 +17,6 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from 'src/users/users.service';
 import { filterUserClean } from 'src/utils/filter/user.filter';
-import { log } from 'console';
-import { use } from 'passport';
 
 @Controller('auth')
 export class AuthController {
@@ -30,8 +28,9 @@ export class AuthController {
   signup(
     @Body() signupDto: SignupDto,
     @Session() session: Record<string, any>,
+    @Request() req
   ) {
-    return this.authService.signup(signupDto, session);
+    return this.authService.signup(signupDto, session, req);
   }
 
   @Post('signin')
@@ -59,11 +58,23 @@ export class AuthController {
     });
   }
 
-  @UseGuards(AuthGuard('session'))
-  @Get('check')
-  checkLogin(@Req() req: Request) {
-    console.log(req);
-    return req;
+  @Post('check')
+  check(@Request() req, @Response() res, @Session() session: Record<string, any>) {
+    if (req.user) {
+      return {
+        user: filterUserClean(req.user),
+      };
+    } else {
+      req.session.destroy((err) => {
+        if (err) {
+          return res
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .send({ message: 'Utilisateur non connecté' });
+        }
+        res.clearCookie('connect.sid');
+        return res.status(HttpStatus.UNAUTHORIZED).send({ message: 'Utilisateur non connecté' });
+      });
+    }
   }
 
   @Get('confirm')

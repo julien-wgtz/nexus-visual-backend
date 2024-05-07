@@ -1,61 +1,149 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { FolderDto } from './dto/folderDto';
+import { FolderDto } from '../folders/dto/folderDto';
+import { Chart } from '@prisma/client';
+import { ChartDto } from './dto/chartDto';
 
 @Injectable()
 export class ChartsService {
   constructor(private prisma: PrismaService) {}
 
-  // Récupérer tous les folders d'un account id
-  getFolders(accountId: number) {
-    return this.prisma.folder.findMany({
-      where: { accountId },
-    });
+    async createChart(chart: ChartDto ) {
+      
+      const numberChart = await this.prisma.folder.findFirst({
+        where: {
+          id: chart.folderId
+        },
+        include: {
+          _count: {
+            select: { charts: true },
+          },
+        },
+      })
+
+     return this.prisma.chart.create({
+        data: {
+          databaseId: chart.databaseId,
+          folderId: chart.folderId,
+          title: chart.title,
+          currentChartType: chart.type,
+          order: numberChart._count.charts,
+        }
+    })
   }
 
-  createFolder(folder: FolderDto) {
-    return this.prisma.folder.create({
-      data: {
-        accountId: folder.accountId,
-        name: folder.name,
-        order: folder.order,
+  async deleteChart(chart: ChartDto) {
+    const chartToDelete = await this.prisma.chart.delete({
+      where: { id: chart.id },
+    });
+
+    const folder = await this.prisma.folder.findUnique({
+      where: { id: chartToDelete.folderId },
+      include: {
+        charts: true,
       },
     });
+
+    let indexOrder = chartToDelete.order;
+
+    for(let i = indexOrder; i < folder.charts.length; i++) {
+        if(folder.charts[i].id !== chart.id) {
+          await this.prisma.chart.update({
+            where: { id: folder.charts[i].id },
+            data: {
+              order: i,
+            },
+          });
+        }
+    }
+
+    return folder;
   }
 
-  // une function pour modifier le nom du folder
-  updateFolder(id: number, folder: FolderDto) {
-    return this.prisma.folder.update({
-      where: { id },
+  updateChart(chart: ChartDto) {
+    const chartUpdated = this.prisma.chart.update({
+      where: { id: chart.id },
       data: {
-        name: folder.name,
+        title: chart.title,
+        currentChartType: chart.type,
+        databaseId: chart.databaseId,
+        order: chart.order,
       },
     });
+
+    return chartUpdated;
   }
 
-  changeOrder(id: number, order: number) {
-    return this.prisma.folder.update({
-      where: { id },
+  async updateOrder(indexOrigine: number, indexDestination: number, folderOrigineId: number, folderDestinationId: number) {
+    const folderOrgine = await this.prisma.folder.findUnique({
+      where: { id: folderOrigineId },
+      include: {
+				charts: {
+					orderBy: {
+						order: 'asc'
+					}
+				}
+			}
+    });
+
+    const folderDestination = await this.prisma.folder.findUnique({
+      where: { id: folderDestinationId },
+      include: {
+				charts: {
+					orderBy: {
+						order: 'asc'
+					}
+				}
+			}
+    });
+
+    const chartToMove = folderOrgine.charts[indexOrigine];
+    folderOrgine.charts.splice(indexOrigine, 1);
+
+    for(let i = 0; i < folderOrgine.charts.length; i++) {
+      folderOrgine.charts[i].order = i;
+      await this.prisma.chart.update({
+        where: { id: folderOrgine.charts[i].id },
+        data: {
+          order: i,
+        },
+      });
+    }
+
+    await this.prisma.chart.update({
+      where: { id: chartToMove.id },
       data: {
-        order,
+        order: indexDestination,
+        folderId: folderDestinationId,
       },
     });
-  }
 
-  //function to rename a folder name
-  renameFolder(id: number, folder: FolderDto) {
-    return this.prisma.folder.update({
-      where: { id },
-      data: {
-        name: folder.name,
-      },
-    });
-  }
+    folderDestination.charts.splice(indexDestination, 0, chartToMove);
 
-  // une function pour supprimer un folder
-  deleteFolder(id: number) {
-    return this.prisma.folder.delete({
-      where: { id },
+      for(let i = 0; i < folderDestination.charts.length; i++) {
+        folderDestination.charts[i].order = i;
+        if(folderDestination.charts[i].id !== chartToMove.id) {
+          await this.prisma.chart.update({
+            where: { id: folderDestination.charts[i].id },
+            data: {
+              order: i,
+            },
+          });
+        }
+      }
+
+    const folders = await this.prisma.folder.findMany({
+      orderBy: {
+				order: 'asc'
+			},
+			include: {
+				charts: {
+					orderBy: {
+						order: 'asc'
+					}
+				}
+			}
     });
+    return folders;
   }
 }

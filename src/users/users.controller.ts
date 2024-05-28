@@ -1,10 +1,10 @@
 import {
   Body,
   Controller,
-  Get,
+  HttpStatus,
   Post,
   Request,
-  Session,
+  Response,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -29,10 +29,14 @@ export class UsersController {
     // return filterUserClean(user);
   }
 
-  @Get('listUser')
+  @Post('get-user-by-id')
   @UseGuards(AuthGuard)
-  listUser(@Request() req, @Session() session: Record<string, any>) {
-    const users = this.usersService.list();
-    return users;
+  async getUserById(@Response() response, @Request() req) {
+    try {
+      const user = await this.usersService.findOne(req.user.id);
+      return response.status(HttpStatus.OK).json(user);
+    } catch (error) {
+      return response.status(HttpStatus.BAD_REQUEST).json({ message: error.message });
+    }
   }
 }

@@ -40,9 +40,10 @@ export class UsersService {
   // }
 
   // Récupérez l'utilisateur à partir de la base de données
-  async findOne(id: number): Promise<User | null> {
+  async findOne(id: number): Promise<any> {
     return this.prismaService.user.findUnique({
       where: { id },
+      include: { currentAccount: true },
     });
   }
 }

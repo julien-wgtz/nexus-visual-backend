@@ -9,7 +9,6 @@ import {
   Request,
   Response,
   Session,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { SignupDto } from './dto/signupDto';
@@ -40,7 +39,6 @@ export class AuthController {
     @Session() session: Record<string, any>,
     @Response() res,
   ) {
-    session.userId = req.user.id;
     const response = await this.authService.signin(req, session);
     return res.status(HttpStatus.OK).send(response);
   }
@@ -61,9 +59,7 @@ export class AuthController {
   @Post('check')
   check(@Request() req, @Response() res, @Session() session: Record<string, any>) {
     if (req.user) {
-      return {
-        user: filterUserClean(req.user),
-      };
+      return res.status(HttpStatus.OK).send(req.user);
     } else {
       req.session.destroy((err) => {
         if (err) {

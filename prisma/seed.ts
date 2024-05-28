@@ -15,22 +15,40 @@ async function main() {
       email: 'julien.wgtz@outlook.com',
       password: '$2b$10$UjAqzANIwkVBPHUjyzyC8OU6ashGJVl7t5687J4xtiF9Xh0K9VALe',
       confirmed: true,
+      accountUser: {
+        create: {
+          role: 'OWNER',
+          account: {
+            create: {
+              name: 'Compte Admin',
+              status: 'GOD',
+              notionToken: "secret_LLJOVoRqvyvGhw7d16iZ6CuUQTMBTIdrRn3J93zbPEx"
+              },
+          },
+        },
+      }
     },
+    include: {
+      accountUser: {
+        include: {
+          account: true
+        }
+      }
+    }
   });
-  const accountGod = await prisma.account.upsert({
-    where: { ownerId: userAdminGod.id },
-    update: {},
-    create: {
-      name: 'Compte GOD Admin',
-      owner: { connect: { id: userAdminGod.id } },
-      status: 'GOD',
-      notionToken: "secret_LLJOVoRqvyvGhw7d16iZ6CuUQTMBTIdrRn3J93zbPEx"
+
+  await prisma.user.update({
+    where: {
+      id: userAdminGod.id,
     },
+    data: {
+      currentAccountId: userAdminGod.accountUser[0].account.id,
+    }
   });
 
   await prisma.folder.create({
     data: {
-      account: { connect: { ownerId: accountGod.id } },
+      accountId: userAdminGod.accountUser[0].account.id,
       order: 10000,
       isShadow: true
     },
@@ -49,22 +67,40 @@ async function main() {
       email: 'pro@test.com',
       password: '$2b$10$UjAqzANIwkVBPHUjyzyC8OU6ashGJVl7t5687J4xtiF9Xh0K9VALe',
       confirmed: true,
+      accountUser: {
+        create: {
+          role: 'OWNER',
+          account: {
+            create: {
+              name: 'Compte Pro',
+              status: 'PRO',
+              notionToken: "secret_LLJOVoRqvyvGhw7d16iZ6CuUQTMBTIdrRn3J93zbPEx"
+            }
+          },
+        },
+      }
     },
+    include: {
+      accountUser: {
+        include: {
+          account: true
+        }
+      }
+    }
   });
-  const accountPro = await prisma.account.upsert({
-    where: { ownerId: userPro.id },
-    update: {},
-    create: {
-      name: 'Compte Pro',
-      owner: { connect: { id: userPro.id } },
-      status: 'PRO',
-      notionToken: "secret_LLJOVoRqvyvGhw7d16iZ6CuUQTMBTIdrRn3J93zbPEx"
+
+  await prisma.user.update({
+    where: {
+      id: userPro.id,
     },
+    data: {
+      currentAccountId: userPro.accountUser[0].account.id,
+    }
   });
 
   await prisma.folder.create({
     data: {
-      account: { connect: { ownerId: accountPro.id } },
+      accountId: userPro.accountUser[0].account.id,
       order: 10000,
       isShadow: true
     },
@@ -83,22 +119,40 @@ async function main() {
       email: 'free@test.com',
       password: '$2b$10$UjAqzANIwkVBPHUjyzyC8OU6ashGJVl7t5687J4xtiF9Xh0K9VALe',
       confirmed: true,
+      accountUser: {
+        create: {
+          role: 'OWNER',
+          account: {
+            create: {
+              name: 'Compte Free',
+              status: 'FREE',
+              notionToken: "secret_LLJOVoRqvyvGhw7d16iZ6CuUQTMBTIdrRn3J93zbPEx"
+            },
+          },
+        }
+      }
     },
+    include: {
+      accountUser: {
+        include: {
+          account: true
+        }
+      }
+    }
   });
-  const accountFree = await prisma.account.upsert({
-    where: { ownerId: userFree.id },
-    update: {},
-    create: {
-      name: 'Compte Free',
-      owner: { connect: { id: userFree.id } },
-      status: 'FREE',
-      notionToken: "secret_LLJOVoRqvyvGhw7d16iZ6CuUQTMBTIdrRn3J93zbPEx"
+
+  await prisma.user.update({
+    where: {
+      id: userFree.id,
     },
+    data: {
+      currentAccountId: userFree.accountUser[0].account.id,
+    }
   });
 
   await prisma.folder.create({
     data: {
-      account: { connect: { ownerId: accountFree.id } },
+      accountId: userFree.accountUser[0].account.id,
       order: 10000,
       isShadow: true
     },
@@ -117,22 +171,40 @@ async function main() {
       email: 'tester@test.com',
       password: '$2b$10$UjAqzANIwkVBPHUjyzyC8OU6ashGJVl7t5687J4xtiF9Xh0K9VALe',
       confirmed: true,
+      accountUser: {
+        create: {
+          role: 'OWNER',
+          account: {
+            create: {
+              name: 'Compte Tester',
+              status: 'TESTER',
+              notionToken: "secret_LLJOVoRqvyvGhw7d16iZ6CuUQTMBTIdrRn3J93zbPEx"
+            }
+          }
+        }
+      }
     },
+    include: {
+      accountUser: {
+        include: {
+          account: true
+        }
+      }
+    }
   });
-  const accountTester = await prisma.account.upsert({
-    where: { ownerId: userTester.id },
-    update: {},
-    create: {
-      name: 'Compte Testeur',
-      owner: { connect: { id: userTester.id } },
-      status: 'TESTER',
-      notionToken: "secret_LLJOVoRqvyvGhw7d16iZ6CuUQTMBTIdrRn3J93zbPEx"
+
+  await prisma.user.update({
+    where: {
+      id: userTester.id,
     },
-  });
+    data: {
+      currentAccountId: userTester.accountUser[0].account.id,
+    }
+  }); 
 
   await prisma.folder.create({
     data: {
-      account: { connect: { ownerId: accountTester.id } },
+      accountId: userTester.accountUser[0].account.id,
       order: 10000,
       isShadow: true
     },

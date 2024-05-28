@@ -8,11 +8,11 @@ export class FoldersService {
 
 	constructor(private prismaService: PrismaService) {}
 
-	async getAllFolders(folderDto: FolderDto, response: Response) {
+	async getAllFolders(folderDto: FolderDto, accountId: number) {
 		try {
 			const folder = await this.prismaService.folder.findMany({
 				where: {
-					accountId: folderDto.accountId
+					accountId: accountId
 				},
 				include: {
 					charts: {
@@ -25,32 +25,33 @@ export class FoldersService {
 					order: 'asc',
 				}
 			});
-			return response.status(HttpStatus.OK).json(folder);
+			return folder;
 		} catch (error) {
-			return error;
+			throw new Error(error);
 		}
 	}
 
-	async createFolder(folderDto: FolderDto, response: Response) {
+	async createFolder(folderDto: FolderDto, accountId: number) {
 		try {
 			const folder = await this.prismaService.folder.create({
 				data: {
 					name: folderDto.name,
-					accountId: folderDto.accountId,
+					accountId: accountId,
 					order: folderDto.order
 				}
 			});
-			return response.status(HttpStatus.CREATED).json(folder);
+			return folder;
 		} catch (error) {
 			return error;
 		}
 	}
 
-	async updateFolder(folderDto: FolderDto, response: Response) {
+	async updateFolder(folderDto: FolderDto, response: Response, accountId: number) {
 		try {
 			const folder = await this.prismaService.folder.update({
 				where: {
-					id: folderDto.id
+					id: folderDto.id,
+					accountId: accountId
 				},
 				data: {
 					name: folderDto.name,
@@ -64,14 +65,21 @@ export class FoldersService {
 					}
 				}
 			});
+
+			if(folder === null) {
+				return response.status(HttpStatus.NOT_FOUND).json({message: 'Folder not found'});
+			}
 			return response.status(HttpStatus.OK).json(folder);
 		} catch (error) {
 			return error;
 		}
 	}
 
-	async updateFolderOrder(indexOrigine :number ,indexDestination: number, response: Response) {
+	async updateFolderOrder(indexOrigine :number ,indexDestination: number, accountId: number) {
 		const folders = await this.prismaService.folder.findMany({
+			where: {
+				accountId: accountId
+			},
 			orderBy: {
 				order: 'asc'
 			},
@@ -85,6 +93,11 @@ export class FoldersService {
 		});
 
 		const folder = folders[indexOrigine];
+
+		if(folder === null) {
+			throw new Error('Folder not found');
+		}
+
 		folders.splice(indexOrigine, 1);
 		if (indexDestination > indexOrigine) {
 			indexDestination--;
@@ -104,11 +117,23 @@ export class FoldersService {
 				});
 			}
 		}
-		return response.status(HttpStatus.OK).json(folders);
+		return folders;
 	}
 
-	async deleteFolder(folderDto: FolderDto, response: Response) {
+	async deleteFolder(folderDto: FolderDto, accountId: number) {
 		try {
+
+			const folder = await this.prismaService.folder.findFirst({
+				where: {
+					id: folderDto.id,
+					accountId: accountId
+				}
+			});
+
+			if(folder === null) {
+				throw new Error('Folder not found');
+			}
+
 			const charts = await this.prismaService.chart.findMany({
 				where: {
 					folderId: folderDto.id
@@ -117,6 +142,7 @@ export class FoldersService {
 					order: 'asc'
 				}
 			});
+
 
 			if(charts.length > 0) {
 				const shadowFolder = await this.prismaService.folder.findFirst({
@@ -180,14 +206,25 @@ export class FoldersService {
 				}
 			}
 
-			return response.status(HttpStatus.OK).json(allFolders);
+			return allFolders;
 		} catch (error) {
 			return error;
 		}
 	}
 
-	async deleteFolderWithCharts(folderDto: FolderDto, response: Response) {
+	async deleteFolderWithCharts(folderDto: FolderDto, response: Response, accountId: number) {
 		try {
+
+			const folder = await this.prismaService.folder.findFirst({
+				where: {
+					id: folderDto.id,
+					accountId: accountId
+				}
+			});
+
+			if(folder === null) {
+				return response.status(HttpStatus.NOT_FOUND).json({message: 'Folder not found'});
+			}
 
 			const deleteCharts = await this.prismaService.chart.deleteMany({
 				where: { folderId: folderDto.id },
@@ -232,6 +269,18 @@ export class FoldersService {
 		} catch (error) {
 			console.log(error)
 			return error;
+		}
+	}
+
+	async authorizeFolder(accountId: number, folderId: number) {
+		const folder = await this.prismaService.folder.findFirst({
+			where: {
+				id: folderId,
+			}
+		});
+
+		if(folder.accountId !== accountId) {
+			throw new Error('Unauthorized');
 		}
 	}
 }

@@ -19,10 +19,9 @@ model Account {
   createdAt DateTime @default(now()) @map("created_at")
   updateAt DateTime @updatedAt @map("update_at")
   status STATUS_ACCOUNT @default(FREE)
-  owner User @relation(fields: [ownerId], references: [id])
-  ownerId Int @unique
   users AccountUser[]
   folders Folder[]
+  userOnAccount User[]
   @@map("accounts")
 }
 
@@ -44,7 +43,8 @@ model User {
   updateAt DateTime @updatedAt @map("update_at")
   confirmed Boolean @default(false)
   confirmationToken confirmationToken[]
-  account Account?
+  currentAccountId Int?
+  currentAccount Account? @relation(fields: [currentAccountId], references: [id])
   accountUser AccountUser[]
   @@map("users")
 }
@@ -90,19 +90,8 @@ model Chart {
   folder Folder @relation(fields: [folderId], references: [id])
   folderId Int 
   order Int
-  chartData ChartData[]
+  config Json?
   @@map("charts")
-}
-
-model ChartData {
-  id Int @id @default(autoincrement())
-  data Json
-  chartType CHART_TYPE
-  createdAt DateTime @default(now()) @map("created_at")
-  updateAt DateTime @updatedAt @map("update_at")
-  chart Chart @relation(fields: [chartId], references: [id])
-  chartId Int
-  @@map("chart_data")
 }
 
 
@@ -114,6 +103,7 @@ enum CHART_TYPE {
 }
 
 enum ROLE_ACCOUNT {
+  OWNER
   ADMIN
   VIEWER
 }

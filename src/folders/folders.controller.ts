@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { FoldersService } from './folders.service';
 import { FolderDto } from './dto/folderDto';
 import { Response } from 'express';
@@ -11,33 +11,67 @@ export class FoldersController {
 	constructor(private foldersService: FoldersService) {}
 
 	@Post('')
-	getAllFolders(@Body() folderDto: FolderDto, @Res() response: Response) {
-		return this.foldersService.getAllFolders(folderDto, response);
+	async getAllFolders(@Body() folderDto: FolderDto, @Res() response: Response, @Req() request ){
+		try {
+			const folders = await this.foldersService.getAllFolders(folderDto, request.user.account.id);
+			return response.status(HttpStatus.OK).json(folders);
+		} catch (error) {
+			return response.status(HttpStatus.BAD_REQUEST).json({message: error.message});
+		}
+
 	}
 
 	@Post('create')
-	createFolder(@Body() folderDto: FolderDto, @Res() response: Response) {
-		return this.foldersService.createFolder(folderDto, response);
+	async createFolder(@Body() folderDto: FolderDto, @Res() response: Response, @Req() request) {
+		try {
+			const newfolder = await this.foldersService.createFolder(folderDto, request.user.account.id);
+			return response.status(HttpStatus.CREATED).json(newfolder);
+		} catch (error) {
+			return response.status(HttpStatus.BAD_REQUEST).json({message: error.message});
+		}
 	}
 
 	@Post('update')
-	updateFolder(@Body() folderDto: FolderDto, @Res() response: Response) {
-		return this.foldersService.updateFolder(folderDto, response);
+	async updateFolder(@Body() folderDto: FolderDto, @Res() response: Response, @Req() request) {
+		try {
+			await this.foldersService.authorizeFolder(request.user.account.id, folderDto.id);
+			const updatedFolder = await this.foldersService.updateFolder(folderDto, response, request.user.account.id);
+			return response.status(HttpStatus.OK).json(updatedFolder);
+		} catch (error) {
+			return response.status(HttpStatus.BAD_REQUEST).json({message: error.message});
+		}
 	}
 	
 	@Post('update-order')
-	updateFolderOrder(@Body() {indexOrigine, indexDestination} : {indexOrigine: number, indexDestination: number}, @Res() response: Response) {
-		return this.foldersService.updateFolderOrder(indexOrigine, indexDestination, response);
+	async updateFolderOrder(@Body() {indexOrigine, indexDestination} : {indexOrigine: number, indexDestination: number}, @Res() response: Response, @Req() request) {
+		try {
+			const updatedFolder = await this.foldersService.updateFolderOrder(indexOrigine, indexDestination, request.user.account.id);
+			return response.status(HttpStatus.OK).json(updatedFolder);
+		} catch (error) {
+			return response.status(HttpStatus.BAD_REQUEST).json({message: error.message});
+		}
 	}
 
 	@Post('delete')
-	deleteFolder(@Body() folderDto: FolderDto, @Res() response: Response) {
-		return this.foldersService.deleteFolder(folderDto, response);
+	async deleteFolder(@Body() folderDto: FolderDto, @Res() response: Response, @Req() request) {
+		try {	
+			await this.foldersService.authorizeFolder(request.user.account.id, folderDto.id);
+			const folderDeleted = await this.foldersService.deleteFolder(folderDto, request.user.account.id);
+			return response.status(HttpStatus.OK).json(folderDeleted);
+		} catch (error) {
+			return response.status(HttpStatus.BAD_REQUEST).json({message: error.message});
+		}
 	}
 
 	@Post('delete-with-charts')
-	deleteFolderWithCharts(@Body() folderDto: FolderDto, @Res() response: Response) {
-		return this.foldersService.deleteFolderWithCharts(folderDto, response);
+	async deleteFolderWithCharts(@Body() folderDto: FolderDto, @Res() response: Response, @Req() request) {
+		try {
+			await this.foldersService.authorizeFolder(request.user.account.id, folderDto.id);
+			const folderDeleted = await this.foldersService.deleteFolderWithCharts(folderDto, response, request.user.account.id);
+			return response.status(HttpStatus.OK).json(folderDeleted);
+		} catch (error) {
+			return response.status(HttpStatus.BAD_REQUEST).json({message: error.message});
+		}
 	}
 
 }

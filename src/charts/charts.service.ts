@@ -1,18 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { FolderDto } from '../folders/dto/folderDto';
-import { Chart } from '@prisma/client';
 import { ChartDto } from './dto/chartDto';
 
 @Injectable()
 export class ChartsService {
   constructor(private prisma: PrismaService) {}
 
-    async createChart(chart: ChartDto ) {
+    async createChart(chart: ChartDto, accountId: number) {
       
       const numberChart = await this.prisma.folder.findFirst({
         where: {
-          id: chart.folderId
+          id: chart.folderId,
+          accountId: accountId
         },
         include: {
           _count: {
@@ -21,7 +20,7 @@ export class ChartsService {
         },
       })
 
-     return this.prisma.chart.create({
+      const newChart = await this.prisma.chart.create({
         data: {
           databaseId: chart.databaseId,
           folderId: chart.folderId,
@@ -30,6 +29,7 @@ export class ChartsService {
           order: numberChart._count.charts,
         }
     })
+     return newChart;
   }
 
   async deleteChart(chart: ChartDto) {
@@ -74,7 +74,27 @@ export class ChartsService {
     return chartUpdated;
   }
 
-  async updateOrder(indexOrigine: number, indexDestination: number, folderOrigineId: number, folderDestinationId: number) {
+  async updateConfigChart(chartId: number, config: any) {
+    return this.prisma.chart.update({
+      where: {id: chartId},
+      data: {
+        config
+      }
+    })
+  }
+
+  async getConfigChart(chartId: number) {
+    return this.prisma.chart.findFirst({
+      select: {
+        config: true
+      },
+      where: {
+        id: chartId
+      }
+    })
+  } 
+
+  async updateOrder(accountId: number, indexOrigine: number, indexDestination: number, folderOrigineId: number, folderDestinationId: number) {
 
     const folderOrgine = await this.prisma.folder.findUnique({
       where: { id: folderOrigineId },
@@ -142,6 +162,9 @@ if(folderOrigineId != folderDestinationId) {
 
 
     const folders = await this.prisma.folder.findMany({
+      where: {
+        accountId: accountId
+      },
       orderBy: {
         order: 'asc'
       },
@@ -154,6 +177,31 @@ if(folderOrigineId != folderDestinationId) {
       }
     });
    return folders;
+  }
+
+  async getDatabaseId(chartId: number) {
+    const chart = await this.prisma.chart.findUnique({
+      where: { id: chartId },
+    });
+    return chart.databaseId;
+  }
+
+  async authorizeChart(accountId: number, chartId: number) {
+    const chart = await this.prisma.chart.findUnique({
+      where: { id: chartId },
+      include: {
+        folder: true
+      }
+    });
+
+    if(!chart) {
+      throw new Error("Chart not found")
+    }
+
+    if(chart.folder.accountId !== accountId) {
+      throw new Error("Unauthorized")
+    }
+    return true;
   }
 
 }

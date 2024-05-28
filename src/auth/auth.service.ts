@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import { MailerService } from 'src/mailer/mailer.service';
 import { SignupDto } from './dto/signupDto';
-import { SigninDto } from './dto/signinDto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
@@ -37,16 +36,35 @@ export class AuthService {
     const hashPassword = await bcrypt.hash(password, 10);
 
     const user = await this.prismaService.user.create({
-      data: { email, password: hashPassword },
+      data: { 
+        email,
+        password: hashPassword,
+        accountUser: {
+          create: {
+            role: 'OWNER',
+            account: {
+              create: {
+                name: 'Workspace',
+              }
+            }
+          }
+        },
+      },
+      include: {
+        accountUser: {
+          include: {
+            account: true,
+          }
+        },
+      }
     });
 
-    const account = await this.prismaService.account.create({
+    await this.prismaService.user.update({
+      where: {
+        id: user.id,
+      },
       data: {
-        owner: {
-          connect: {
-            id: user.id,
-          },
-        },
+        currentAccountId: user.accountUser[0].accountId,
       },
     });
 
@@ -56,14 +74,12 @@ export class AuthService {
         order: 10000,
         account: {
           connect: {
-            id: account.id,
+            id: user.accountUser[0].accountId,
           },
         },
       },
     });
-
     req.user = user;
-    req.session.save();
     await new Promise<void>((resolve, reject) => {
       req.login(req.user, (err) => {
         if (err) {
@@ -73,6 +89,7 @@ export class AuthService {
         }
       });
     });
+
     const confirmationToken = randomBytes(32).toString('hex');
     const expirationDate = new Date();
     expirationDate.setDate(expirationDate.getDate() + 1); // Le token expire dans 1 jour
@@ -94,10 +111,11 @@ export class AuthService {
       },
     );
 
-    return { status: 201, data: { user, account } };
+    return { status: 201, data: { user} };
   }
 
   async signin(@Request() req, @Session() session: Record<string, any>) {
+    session.userId = req.user.id;
     req.session.save();
     try {
       await new Promise<void>((resolve, reject) => {
@@ -110,9 +128,12 @@ export class AuthService {
         });
       });
 
-      const account = await this.accountService.findAccountByUserId(
-        req.user.id,
-      );
+
+      const account = await this.prismaService.account.findUnique({
+        where: {
+          id: req.user.currentAccountId,
+        },
+      });
 
       return {
         status: 200,
@@ -129,6 +150,9 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.prismaService.user.findUnique({
       where: { email: email },
+      include: {
+        accountUser: true,
+      },
     });
 
     if (user && bcrypt.compareSync(password, user.password)) {

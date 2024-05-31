@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ChartDto } from './dto/chartDto';
+import * as bcrypt from 'bcrypt';
+
 
 @Injectable()
 export class ChartsService {
@@ -29,7 +31,32 @@ export class ChartsService {
           order: numberChart._count.charts,
         }
     })
-     return newChart;
+    
+    const generateShareToken = async (data) => {
+      const jsonString = JSON.stringify(data);
+      const salt = await bcrypt.genSalt(10); // Génère un sel avec un facteur de coût de 10
+      const hash = await bcrypt.hash(jsonString, salt);
+      return hash.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '').replace(/\./g, '_');
+    };
+
+    // do share token for the chart this taken some data of the chart and the account id crypt it and return it, sharetoken is a string and a value in the chart table
+    const shareToken = await this.prisma.chart.update({
+      where: { id: newChart.id },
+      data: {
+        shareToken: await generateShareToken({
+          chartId: newChart.id,
+          accountId: accountId,
+          createdAt: chart.createdAt,
+          updateAt: chart.updateAt,
+          title: newChart.title,
+          databaseId: newChart.databaseId,
+          currentChartType: newChart.currentChartType,
+          order: newChart.order,
+        }),
+      },
+    });
+
+     return shareToken;
   }
 
   async deleteChart(chart: ChartDto) {
@@ -202,6 +229,51 @@ if(folderOrigineId != folderDestinationId) {
       throw new Error("Unauthorized")
     }
     return true;
+  }
+
+  async getChartFromToken(token: string) {
+    const chart = await this.prisma.chart.findFirst({
+      where: {
+        shareToken: token
+      }
+    });
+
+    if(!chart) {
+      throw new Error("Chart not found")
+    }
+
+    return chart;
+  }
+
+  async regenerateToken(chartId: number, accountId: number) {
+    const chart = await this.prisma.chart.findUnique({
+      where: { id: chartId }
+    });
+
+    const generateShareToken = async (data) => {
+      const jsonString = JSON.stringify(data);
+      const salt = await bcrypt.genSalt(10); // Génère un sel avec un facteur de coût de 10
+      const hash = await bcrypt.hash(jsonString, salt);
+      return hash.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '').replace(/\./g, '_');
+    };
+
+    const shareToken = await this.prisma.chart.update({
+      where: { id: chart.id },
+      data: {
+        shareToken: await generateShareToken({
+          chartId: chart.id,
+          accountId: accountId,
+          createdAt: chart.createdAt,
+          updateAt: new Date(),
+          title: chart.title,
+          databaseId: chart.databaseId,
+          currentChartType: chart.currentChartType,
+          order: chart.order,
+        }),
+      },
+    });
+
+    return shareToken;
   }
 
 }

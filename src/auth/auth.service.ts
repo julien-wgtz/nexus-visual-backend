@@ -22,7 +22,7 @@ export class AuthService {
     private readonly accountService: AccountsService,
   ) {}
   async signup(signupDto: SignupDto, session: Record<string, any>,@Request() req) {
-    const { email, password } = signupDto;
+    const { email, password, language } = signupDto;
     const userExist = await this.prismaService.user.findUnique({
       where: {
         email,
@@ -34,10 +34,11 @@ export class AuthService {
     }
 
     const hashPassword = await bcrypt.hash(password, 10);
-
+    console.log(language)
     const user = await this.prismaService.user.create({
       data: { 
         email,
+        language,
         password: hashPassword,
         accountUser: {
           create: {

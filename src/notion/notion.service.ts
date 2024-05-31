@@ -47,12 +47,6 @@ export class NotionService {
 		const notion = new Client({ auth: notionToken });
 		const response = await notion.databases.query({
 			database_id: databaseId,
-			sorts: [
-				{
-				"property": "Name",
-				"direction": "ascending"
-				}
-			]
 		})
 
 		const properties = []
@@ -96,7 +90,7 @@ export class NotionService {
 			case "status":
 				return property.status.name || "";
 			default: 
-				console.log(property)
+				// console.log(property)
 				return null
 		}
 	}

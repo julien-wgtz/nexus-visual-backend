@@ -46,4 +46,11 @@ export class UsersService {
       include: { currentAccount: true },
     });
   }
+
+  async updateTheme(userId: number, theme: string): Promise<User> {
+    return await this.prismaService.user.update({
+      where: { id: userId },
+      data: { theme },
+    });
+  }
 }

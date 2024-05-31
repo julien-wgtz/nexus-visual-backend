@@ -7,4 +7,6 @@ export class ChartDto {
   title: string;
   type: CHART_TYPE;
   order: number;
+  createdAt: Date;
+  updateAt: Date;
 }

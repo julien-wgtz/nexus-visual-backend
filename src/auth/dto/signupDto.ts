@@ -6,4 +6,6 @@ export class SignupDto {
   readonly email: string;
   @IsNotEmpty()
   readonly password: string;
+  @IsNotEmpty()
+  readonly language: string;
 }

@@ -16,4 +16,21 @@ export class AccountsService {
     });
   }
 
+  async getNotionTokenFromFolderId(folderId: number) {
+    const folder = await this.prismaService.folder.findFirst({
+      where: {
+        id: folderId,
+      },
+    });
+
+    return this.prismaService.account.findFirst({
+      where: {
+        id: folder.accountId,
+      },
+      select: {
+        notionToken: true,
+      },
+    });
+  }
+
 }

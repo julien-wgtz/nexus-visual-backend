@@ -8,15 +8,17 @@ import { request } from 'http';
 import { FoldersService } from 'src/folders/folders.service';
 import { response } from 'express';
 import { cpSync } from 'fs';
-@UseGuards(AuthGuard)
+import { AccountsService } from 'src/accounts/accounts.service';
+
 @Controller('charts')
 export class ChartsController {
   constructor(
     private chartsService: ChartsService,
     private folderService: FoldersService,
-    private notionService: NotionService
+    private notionService: NotionService,
+    private accountService: AccountsService
    ) {}
-
+   @UseGuards(AuthGuard)
   @Post('create')
   async createChart(@Req() request, @Res() response, @Body() chart: ChartDto){
     try {
@@ -27,7 +29,7 @@ export class ChartsController {
       return response.status(HttpStatus.BAD_REQUEST).json({message: error.message})
     }
   }
-
+  @UseGuards(AuthGuard)
   @Post('delete')
   async deleteChart(@Req() request, @Res() response, @Body() chart: ChartDto) {
     try {
@@ -38,7 +40,7 @@ export class ChartsController {
       return response.status(HttpStatus.BAD_REQUEST).json({message: error.message})
     }
   }
-
+  @UseGuards(AuthGuard)
   @Post('update')
   async updateChart(@Req() request, @Res() response, @Body() chart: ChartDto) {
     try {
@@ -49,7 +51,7 @@ export class ChartsController {
       return response.status(HttpStatus.BAD_REQUEST).json({message: error.message})
     }
   }
-
+  @UseGuards(AuthGuard)
   @Post('update-order')
   async updateOrder(
     @Res() response,
@@ -75,7 +77,7 @@ export class ChartsController {
       return response.status(HttpStatus.BAD_REQUEST).json({message: error.message})
     }
   }
-
+  @UseGuards(AuthGuard)
   @Post('get-data-from-chart')
 	async getDataFromChart(@Req() request, @Res() response, @Body() body: {chartId: number}){
 
@@ -93,7 +95,7 @@ export class ChartsController {
     }
 
 	}
-
+  @UseGuards(AuthGuard)
   @Post('get-config-from-chart')
 	async getConfigFromChart(@Req() request, @Res() response, @Body() body: {chartId: number, config: any}){
 
@@ -108,7 +110,7 @@ export class ChartsController {
       return response.status(HttpStatus.BAD_REQUEST).json({message: error.message})
     }
 	}
-
+  @UseGuards(AuthGuard)
   @Post('update-config-from-chart')
 	async updateConfigFromChart(@Req() request, @Res() response, @Body() body: {chartId: number, config: any}){
 
@@ -123,5 +125,39 @@ export class ChartsController {
       return response.status(HttpStatus.BAD_REQUEST).json({message: error.message})
     }
 	}
+
+  @Post('get-chart-from-token')
+  async getChartFromToken(@Req() request, @Res() response, @Body() body: {shareToken: string}) {
+    try {
+      const chart = await this.chartsService.getChartFromToken(body.shareToken);
+      return response.status(HttpStatus.OK).json(chart);
+    } catch (error) {
+      return response.status(HttpStatus.BAD_REQUEST).json({message: error.message})
+    }
+  }
+
+  @Post('get-data-from-token')
+  async getDataFromToken(@Req() request, @Res() response, @Body() body: {shareToken: string}) {
+    try {
+      const chart = await this.chartsService.getChartFromToken(body.shareToken);
+      const databaseId = await this.chartsService.getDatabaseId(chart.id);
+      const {notionToken} = await this.accountService.getNotionTokenFromFolderId(chart.folderId);
+      const result = await this.notionService.getPagesFromDatabase(databaseId, notionToken);
+      return response.status(HttpStatus.OK).json(result);
+    } catch (error) {
+      return response.status(HttpStatus.BAD_REQUEST).json({message: error.message})
+    }
+  }
+
+  @Post('regenerate-token')
+  async regenerateToken(@Req() request, @Res() response, @Body() body: {chartId: number}) {
+    try {
+      await this.chartsService.authorizeChart(request.user.account.id, body.chartId)
+      const chart = await this.chartsService.regenerateToken(body.chartId, request.user.account.id);
+      return response.status(HttpStatus.OK).json(chart);
+    } catch (error) {
+      return response.status(HttpStatus.BAD_REQUEST).json({message: error.message})
+    }
+  }
 
 }

@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import { ConfigService } from '@nestjs/config';
-import * as passport from 'passport';
+import passport from 'passport';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

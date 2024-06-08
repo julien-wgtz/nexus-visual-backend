@@ -15,7 +15,6 @@ import { SignupDto } from './dto/signupDto';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from 'src/users/users.service';
-import { filterUserClean } from 'src/utils/filter/user.filter';
 
 @Controller('auth')
 export class AuthController {

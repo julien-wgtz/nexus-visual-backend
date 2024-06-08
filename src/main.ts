@@ -12,8 +12,7 @@ async function bootstrap() {
   const configService = app.get<ConfigService>(ConfigService);
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({
-    allowedHeaders: '*',
-    origin: '*',
+    origin: [configService.get('FRONT_URL')],
     credentials: true,
   });
   app.use(

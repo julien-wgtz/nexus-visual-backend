@@ -11,7 +11,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { filterUserClean } from 'src/utils/filter/user.filter';
-import { stat } from 'fs';
 import { AccountsService } from 'src/accounts/accounts.service';
 
 @Injectable()

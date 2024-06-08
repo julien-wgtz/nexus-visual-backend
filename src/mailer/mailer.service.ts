@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import EmailTemplates from 'emails';
+import EmailTemplates from '../../emails';
 import { Resend } from 'resend';
 
 @Injectable()
@@ -19,13 +19,13 @@ export class MailerService {
     }
 
     const templateFunction = EmailTemplates[template];
-    // const mail = await this.mailer.emails.send({
-    //   from: `Nexus <${this.configService.get('MAILER_MAIL_ADDRESS')}>`,
-    //   to,
-    //   subject,
-    //   react: templateFunction(data),
-    // });
+    const mail = await this.mailer.emails.send({
+      from: `Nexus <${this.configService.get('MAILER_MAIL_ADDRESS')}>`,
+      to,
+      subject,
+      react: templateFunction(data),
+    });
 
-    // console.log(mail);
+    console.log(mail);
   }
 }

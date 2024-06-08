@@ -12,7 +12,8 @@ async function bootstrap() {
   const configService = app.get<ConfigService>(ConfigService);
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({
-    origin: [configService.get('FRONT_URL'),"https://nexus-visual-frontend.vercel.app"],
+    allowedHeaders: '*',
+    origin: '*',
     credentials: true,
   });
   app.use(

@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import session from 'express-session';
-import connectPgSimple from 'connect-pg-simple';
+import * as session from 'express-session';
+import * as connectPgSimple from 'connect-pg-simple';
 import { ConfigService } from '@nestjs/config';
-import passport from 'passport';
+import * as passport from 'passport';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -26,9 +26,9 @@ async function bootstrap() {
       saveUninitialized: false,
       cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000,
-        secure: false,
+        secure: true,
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'none',
       },
     }),
   );

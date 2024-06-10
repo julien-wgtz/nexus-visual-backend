@@ -5,9 +5,10 @@ import session from 'express-session'; // Import session directly from 'express-
 import connectPgSimple from 'connect-pg-simple';
 import { ConfigService } from '@nestjs/config';
 import passport from 'passport';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const pgSession = connectPgSimple(session);
   const configService = app.get<ConfigService>(ConfigService);
   app.useGlobalPipes(new ValidationPipe());
@@ -15,6 +16,7 @@ async function bootstrap() {
     origin: [configService.get('FRONT_URL')],
     credentials: true,
   });
+  app.set('trust proxy', 1);
   app.use(
     session({
       store: new pgSession({

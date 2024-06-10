@@ -16,7 +16,7 @@ async function bootstrap() {
     origin: [configService.get('FRONT_URL')],
     credentials: true,
   });
-  app.set('trust proxy', 1);
+  app.enable('trust proxy')
   app.use(
     session({
       store: new pgSession({
